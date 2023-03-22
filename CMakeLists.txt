@@ -7,8 +7,8 @@ set(CMAKE_CXX_STANDARD 17)
 #                                   Targets                                    #
 ################################################################################
 
-add_executable(test test.cc)
-add_executable(generator generator.cc)
+add_executable(test common.cc test.cc)
+add_executable(generator generator.cc common.cc)
 
 ################################################################################
 #                            Common compile options                            #
@@ -74,10 +74,10 @@ endif()
 #                                 Dependencies                                 #
 ################################################################################
 
-set(USE_CPPUTILS OFF)
+set(USE_CPPUTILS ON)
 set(USE_GTEST ON)
 set(USE_FMT OFF)
-set(USE_RANGEV3 OFF)
+set(USE_RANGEV3 ON)
 set(USE_RE2 OFF)
 set(USE_JSON OFF)
 set(USE_SPDLOG OFF)
@@ -86,5 +86,5 @@ set(USE_ABSL ON)
 
 include(cmake/ahmad1337_deps.cmake)
 
-target_link_libraries(test ${DEP_LIBS})
-target_link_libraries(generator ${DEP_LIBS} absl::strings)
+target_link_libraries(test ${DEP_LIBS} absl::strings absl::str_format absl::log)
+target_link_libraries(generator ${DEP_LIBS} absl::strings absl::str_format absl::log)

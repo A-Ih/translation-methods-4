@@ -1,9 +1,15 @@
 #include "common.hh"
 #include <iostream>
 
+#include <absl/strings/str_split.h>
+#include <absl/strings/str_format.h>
+#include <absl/strings/substitute.h>
+
+#include <absl/log/log.h>
+
 constexpr auto TEMPLATE = R"(
-TOK1   [ \n]+
-TOK2   [a-zA-Z][a-zA-Z0-9_]*
+TOK1    [ \n]+
+TOK2    [a-zA-Z][a-zA-Z0-9_]*
 
 %%
 
@@ -19,12 +25,18 @@ statements:
 )";
 
 int main() {
-  ParseGrammar(TEMPLATE);
-  auto [tokens, statements] = ConstSplit<2>(TEMPLATE, "\n%%");
+  auto grammar = ParseGrammar(TEMPLATE);
+  LOG(INFO) << "Grammar successfully parsed" << std::endl;
   std::cout << "Here are the tokens: " << std::endl;
-  std::cout << tokens << std::endl;
-  std::cout << "Here are the statements: " << std::endl;
-  std::cout << statements << std::endl;
+  for (const auto& [tok, regex] : grammar->tokenToRegex) {
+    absl::PrintF("token `%s` is parsed by regex `%s`\n", tok, regex);
+  }
+  std::cout << "Here are the rules" << std::endl;
 
+  for (const auto& [nterm, group] : grammar->rules) {
+    for (const auto& rule : group) {
+      absl::PrintF("%s -> %s\n", nterm, absl::StrJoin(rule, " "));
+    }
+  }
 }
 

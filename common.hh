@@ -6,7 +6,8 @@
 #include <unordered_set>
 
 #include <absl/strings/str_split.h>
-#include <absl/strings/substitute.h>
+#include <absl/strings/str_format.h>
+
 
 struct TGrammar {
   std::unordered_map<std::string, std::string> tokenToRegex;
@@ -22,12 +23,16 @@ struct TGrammar {
   // until generation
 };
 
+// This is made as macro so the message expression won't be computed when not
+// needed (which should be almost always the case)
+#define EXPECT(cond, message) if (!(cond)) { throw std::runtime_error(absl::StrFormat(__FILE__ ":%d %s", __LINE__, message)); }
+
 template<std::size_t N>
-inline std::array<std::string, N> ConstSplit(const std::string& text, std::string_view sep) {
-  std::vector<std::string> result = absl::StrSplit(text, sep);
-  if (result.size() != N) {
-    throw std::runtime_error(absl::Substitute("Expected $0 items after split, got $1", N, result.size()));
-  }
+inline std::array<std::string, N> ConstSplit(std::string_view text, std::string_view sep) {
+  // see: https://abseil.io/docs/cpp/guides/strings#filtering-predicates:~:text=v%5B2%5D%20%3D%3D%20%225%22-,Filtering%20Predicates,-Predicates%20can%20filter
+  // for info on SkipWhitespace and SkipEmpty
+  std::vector<std::string> result = absl::StrSplit(text, sep, absl::SkipWhitespace());
+  EXPECT(result.size() == N, absl::StrFormat("Expected %d items after split, got %d", N, result.size()));
   std::array<std::string, N> arr;
   for (std::size_t i = 0; i < N; i++) {
     arr[i] = std::move(result[i]);
@@ -35,8 +40,4 @@ inline std::array<std::string, N> ConstSplit(const std::string& text, std::strin
   return arr;
 }
 
-inline std::shared_ptr<TGrammar> ParseGrammar(const std::string& grammarString) {
-  auto [tokens, productions] = ConstSplit<2>(grammarString, "\n%%");
-
-  return {};
-}
+std::shared_ptr<TGrammar> ParseGrammar(const std::string& grammarString);

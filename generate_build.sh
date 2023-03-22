@@ -7,8 +7,11 @@ then
 fi
 
 # fetch abseil
-wget https://github.com/abseil/abseil-cpp/archive/refs/heads/master.zip
-unzip master.zip -d third-party && rm master.zip
+if [ ! -d third-party/abseil-cpp-master ]
+then
+    wget https://github.com/abseil/abseil-cpp/archive/refs/heads/master.zip
+    unzip master.zip -d third-party && rm master.zip
+fi
 
 additional_opts=""
 build_dir=""
