@@ -10,6 +10,7 @@
 #include <range/v3/all.hpp>
 #include <range/v3/view/map.hpp>
 #include <range/v3/view/any_view.hpp>
+#include <range/v3/view/iota.hpp>
 
 #include <cpputils/string.hh>
 #include <cpputils/common.hh>
@@ -164,4 +165,35 @@ void TGrammar::CalculateFOLLOW() {
       }
     }
   }
+}
+
+bool TGrammar::IsLL1() {
+  EXPECT(!first.empty() && !follow.empty(), "FIRST and FOLLOW should be calculated prior to calling IsLL1()");
+  for (auto& [lhs, rhsGroup] : rules) {
+    auto idxs = ranges::views::ints(0ul, rhsGroup.size());
+    auto pairs = ranges::views::cartesian_product(idxs, idxs)
+      | ranges::views::filter([] (auto p) { auto [i, j] = p; return i != j; });
+    for (auto [i, j] : pairs) {
+      auto& alpha = rhsGroup[i];
+      auto& beta = rhsGroup[j];
+      auto& alphaFirst = CalculateRecurFIRST(*this, alpha);
+      auto& betaFirst = CalculateRecurFIRST(*this, beta);
+
+      // 1. intersection(alphaFirst, betaFirst) == {}
+      for (const auto& tok : alphaFirst) {
+        if (betaFirst.count(tok) > 0) {
+          return false;
+        }
+      }
+      // 2. EPS in alphaFirst => intersection(betaFirst, FOLLOW[A]) == {}
+      if (alphaFirst.contains("EPS")) {
+        for (const auto& tok : follow[lhs]) {
+          if (betaFirst.count(tok) > 0) {
+            return false;
+          }
+        }
+      }
+    }
+  }
+  return true;
 }

@@ -25,6 +25,7 @@ struct TGrammar {
 
   void CalculateFIRST();
   void CalculateFOLLOW();
+  bool IsLL1();
 
 // TODO: CalculateFIRST1, CalculateFOLLOW, устранить бесполезные символы (надо
 // погуглить как  это делается, в конспекте под определением FIRST содержится

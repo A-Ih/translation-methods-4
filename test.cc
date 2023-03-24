@@ -435,10 +435,16 @@ const TGrammar GRAMMAR8 = {
   },
 };
 
-struct GrammarTest : testing::TestWithParam<std::pair<std::string, TGrammar>> {};
+struct TParam {
+  std::string grammarString;
+  TGrammar grammar;
+  bool isLL1;
+};
+
+struct GrammarTest : testing::TestWithParam<TParam> {};
 
 TEST_P(GrammarTest, BasicChecks) {
-  const auto& [text, expectedGrammar] = GetParam();
+  const auto& [text, expectedGrammar, isLL1] = GetParam();
 
   std::shared_ptr<TGrammar> got;
   ASSERT_NO_THROW(got = ParseGrammar(text));
@@ -457,17 +463,20 @@ TEST_P(GrammarTest, BasicChecks) {
     for (const auto& [lhs, lhsFollow] : expectedGrammar.follow) {
       EXPECT_EQ(lhsFollow, got->follow[lhs]);
     }
+
+    EXPECT_EQ(isLL1, got->IsLL1());
   }
+
 }
 
-INSTANTIATE_TEST_SUITE_P(GrammarProcessing, GrammarTest, testing::Values(
-      std::pair{SAMPLE1, GRAMMAR1},
-      std::pair{SAMPLE2, GRAMMAR2},
-      std::pair{SAMPLE3, GRAMMAR3},
-      std::pair{SAMPLE4, GRAMMAR4},
-      std::pair{SAMPLE5, GRAMMAR5},
-      std::pair{SAMPLE6, GRAMMAR6},
-      std::pair{SAMPLE7, GRAMMAR7},
-      std::pair{SAMPLE8, GRAMMAR8}
+INSTANTIATE_TEST_SUITE_P(GrammarProcessing, GrammarTest, testing::Values<TParam>(
+      TParam{SAMPLE1, GRAMMAR1, false},
+      TParam{SAMPLE2, GRAMMAR2, false},
+      TParam{SAMPLE3, GRAMMAR3, true},
+      TParam{SAMPLE4, GRAMMAR4, true},
+      TParam{SAMPLE5, GRAMMAR5, false},
+      TParam{SAMPLE6, GRAMMAR6, true},
+      TParam{SAMPLE7, GRAMMAR7, true},
+      TParam{SAMPLE8, GRAMMAR8, false}
       // TODO: add more examples, I'm too lazy to do it now
 ));
