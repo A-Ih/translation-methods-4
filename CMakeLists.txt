@@ -86,5 +86,5 @@ set(USE_ABSL ON)
 
 include(cmake/ahmad1337_deps.cmake)
 
-target_link_libraries(test ${DEP_LIBS} absl::strings absl::str_format absl::log absl::stacktrace)
-target_link_libraries(generator ${DEP_LIBS} absl::strings absl::str_format absl::log absl::stacktrace)
+target_link_libraries(test ${DEP_LIBS} absl::strings absl::str_format absl::log absl::stacktrace absl::symbolize)
+target_link_libraries(generator ${DEP_LIBS} absl::strings absl::str_format absl::log absl::stacktrace absl::symbolize)

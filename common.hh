@@ -24,6 +24,7 @@ struct TGrammar {
   std::unordered_map<std::string, std::pair<std::vector<std::string>, std::unordered_set<std::string>>> first1;
 
   void CalculateFIRST();
+  void CalculateFOLLOW();
 
 // TODO: CalculateFIRST1, CalculateFOLLOW, устранить бесполезные символы (надо
 // погуглить как  это делается, в конспекте под определением FIRST содержится

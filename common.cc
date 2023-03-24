@@ -38,6 +38,7 @@ std::shared_ptr<TGrammar> ParseGrammar(const std::string& grammarString) {
   }
 
   EXPECT(!utils::OneOf("EPS", grammar.tokenToRegex | ranges::views::keys), "Don't define reserved token EPS");
+  EXPECT(!utils::OneOf("EOF", grammar.tokenToRegex | ranges::views::keys), "Don't define reserved token EOF");
 
   for (auto productionGroup : absl::StrSplit(productions, ';', absl::SkipWhitespace())) {
     auto [nonTermId, ps] = ConstSplit<2>(productionGroup, ":");
@@ -74,7 +75,11 @@ std::unordered_set<std::string>& CalculateRecurFIRST(TGrammar& grammar, ranges::
 
   std::string head = *alpha.begin();
   if (head == "EPS" || IS_TS(head)) {
-    return CalculateRecurFIRST(grammar, alpha | ranges::views::drop(1));
+    auto& rhsFirst = CalculateRecurFIRST(grammar, alpha | ranges::views::drop(1));
+    for (const auto& tokRhs : rhsFirst) {
+      fst.insert(tokRhs);
+    }
+    return fst;
   } else if (IS_TOKEN(head)) {
     grammar.first[head].insert(head);
     fst.insert(head);
@@ -117,6 +122,44 @@ void TGrammar::CalculateFIRST() {
         }
         if (lhsFirst.size() != oldSize) {
           change = true;
+        }
+      }
+    }
+  }
+}
+
+void TGrammar::CalculateFOLLOW() {
+  EXPECT(!first.empty(), "FIRST set should be calculated before FOLLOW");
+  EXPECT(rules.count("start") == 1, "There should be at least one rule for starting nonterminal `start`");
+
+  follow["start"] = { "EOF" };
+
+  bool change{true};
+  while (change) {
+    change = false;
+    for (auto& [lhs, rhsGroup] : rules) {
+      for (auto& rhs : rhsGroup) {
+        // TODO: views::zip(rhs, views::ints(1))
+        for (int i = 0; i < rhs.size(); i++) {
+          if (!IS_NTERM(rhs[i])) {
+            continue;
+          }
+          auto& bFollow = follow[rhs[i]];
+          auto& aFollow = follow[lhs];
+          auto oldSz = bFollow.size();
+          auto& gammaFirst = CalculateRecurFIRST(*this, rhs | ranges::views::drop(i + 1));
+          for (const auto& tok : gammaFirst) {
+            if (tok == "EPS") {
+              for (const auto& t : aFollow) {
+                bFollow.insert(t);
+              }
+            } else {
+              bFollow.insert(tok);
+            }
+          }
+          if (oldSz != bFollow.size()) {
+            change = true;
+          }
         }
       }
     }

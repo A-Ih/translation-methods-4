@@ -18,6 +18,8 @@ TOK2    [a-zA-Z][a-zA-Z0-9_]*
 
 %%
 
+start: file;
+
 file:
   statements TOK1 $trans_symb1
   | TOK2 $trans_symb2
@@ -35,16 +37,15 @@ const TGrammar GRAMMAR1{
     {"TOK2", "[a-zA-Z][a-zA-Z0-9_]*"},
   },
   .rules = {
+    { "start", { { "file" }, }, },
     {
-      "file",
-      {
+      "file", {
         {"statements", "TOK1", "$trans_symb1"},
         {"TOK2", "$trans_symb2"},
       },
     },
     {
-      "statements",
-      {
+      "statements", {
         {"TOK2"},
         {"TOK2", "TOK2", "$trans_symb3"},
       },
@@ -57,6 +58,11 @@ const TGrammar GRAMMAR1{
     { "TOK2", {"TOK2"} },
     { "EPS", {"EPS"} },
   },
+  .follow = {
+    { "start", { "EOF" } },
+    { "file", { "EOF" } },
+    { "statements", { "TOK1" } },
+  },
 };
 
 constexpr auto SAMPLE2 = R"(
@@ -67,6 +73,8 @@ PLUS    [+]
 ASTERISK    [*]
 
 %%
+
+start: e;
 
 e: e PLUS t | t;
 
@@ -84,23 +92,21 @@ const TGrammar GRAMMAR2{
     {"ASTERISK", "[*]"},
   },
   .rules = {
+    { "start", { { "e" }, }, },
     {
-      "e",
-      {
+      "e", {
         {"e", "PLUS", "t"},
         {"t"},
       },
     },
     {
-      "t",
-      {
+      "t", {
         {"t", "ASTERISK", "f"},
         {"f"},
       },
     },
     {
-      "f",
-      {
+      "f", {
         {"LPAREN", "e", "RPAREN"},
         {"NUM"},
       },
@@ -114,6 +120,12 @@ const TGrammar GRAMMAR2{
     { "LPAREN", {"LPAREN"} },
     { "EPS", {"EPS"} },
   },
+  .follow = {
+    { "start", { "EOF" } },
+    { "e", { "EOF", "PLUS", "RPAREN" } },
+    { "t", { "EOF", "PLUS", "ASTERISK", "RPAREN" } },
+    { "f", { "EOF", "PLUS", "ASTERISK", "RPAREN" } },
+  },
 };
 
 constexpr auto SAMPLE3 = R"(
@@ -125,6 +137,7 @@ ASTERISK    [*]
 
 %%
 
+start: e;
 e: t e_prime;
 e_prime: PLUS t e_prime | EPS;
 t: f t_prime;
@@ -142,6 +155,7 @@ const TGrammar GRAMMAR3{
     {"ASTERISK", "[*]"},
   },
   .rules = {
+    { "start", { { "e" }, }, },
     {
       "e",
       {
@@ -184,6 +198,14 @@ const TGrammar GRAMMAR3{
     { "LPAREN", {"LPAREN"} },
     { "EPS", {"EPS"} },
   },
+  .follow = {
+    { "start", { "EOF" } },
+    { "e", { "EOF", "RPAREN", } },
+    { "e_prime", { "EOF", "RPAREN", } },
+    { "t", { "EOF", "PLUS", "RPAREN" } },
+    { "t_prime", { "EOF", "PLUS", "RPAREN" } },
+    { "f", { "EOF", "PLUS", "ASTERISK", "RPAREN" } },
+  },
 };
 
 /*******************************************************************************
@@ -197,6 +219,7 @@ A    haha
 
 %%
 
+start: s;
 s: A b d H;
 b: C c;
 c: B c | EPS;
@@ -210,41 +233,36 @@ const TGrammar GRAMMAR4 = {
     { "A", "haha" },
   },
   .rules = {
+    { "start", { { "s" }, }, },
     {
-      "s",
-      {
+      "s", {
         {"A", "b", "d", "H"},
       },
     },
     {
-      "b",
-      {
+      "b", {
         {"C", "c"},
       },
     },
     {
-      "c",
-      {
+      "c", {
         {"B", "c"},
         {"EPS"},
       },
     },
     {
-      "d",
-      {
+      "d", {
         {"e", "f"},
       },
     },
     {
-      "e",
-      {
+      "e", {
         {"G"},
         {"EPS"},
       },
     },
     {
-      "f",
-      {
+      "f", {
         {"F"},
         {"EPS"},
       },
@@ -258,12 +276,22 @@ const TGrammar GRAMMAR4 = {
     { "e", {"G", "EPS"} },
     { "f", {"F", "EPS"} },
   },
+  .follow = {
+    { "start", {"EOF"} },
+    { "s", {"EOF"} },
+    { "b", {"G", "F", "H"} },
+    { "c", {"G", "F", "H"} },
+    { "d", { "H" } },
+    { "e", {"F", "H"} },
+    { "f", { "H" } },
+  },
 };
 
 // problem-02
 constexpr auto SAMPLE5 = R"(
 B    boba
 %%
+start: s;
 s: a;
 a: A b | a D;
 b: B;
@@ -275,6 +303,7 @@ const TGrammar GRAMMAR5 = {
     { "B", "boba" },
   },
   .rules = {
+    { "start", { { "s" }, }, },
     { "s", { {"a"}, }, },
     { "a", { {"A", "b"}, {"a", "D"}, }, },
     { "b", { { "B" }, }, },
@@ -286,6 +315,13 @@ const TGrammar GRAMMAR5 = {
     { "b", {"B"} },
     { "c", {"G"} },
   },
+  .follow = {
+    { "start", {"EOF"} },
+    { "s", {"EOF"} },
+    { "a", {"D", "EOF"} },
+    { "b", {"EOF", "D"} },
+    { "c", {} },
+  },
 };
 
 // problem-03
@@ -295,6 +331,7 @@ RPAREN    [)]
 COMMA    ,
 A    kek
 %%
+start: s;
 s: LPAREN l RPAREN | A;
 l: s l_prime;
 l_prime: COMMA s l_prime | EPS;
@@ -308,6 +345,7 @@ const TGrammar GRAMMAR6 = {
     { "A", "kek" },
   },
   .rules = {
+    { "start", { { "s" }, }, },
     { "s", { {"LPAREN", "l", "RPAREN"}, { "A" }, }, },
     { "l", { {"s", "l_prime"}, }, },
     { "l_prime", { { "COMMA", "s", "l_prime" }, { "EPS" }, }, },
@@ -317,6 +355,12 @@ const TGrammar GRAMMAR6 = {
     { "l", {"LPAREN", "A"} },
     { "l_prime", {"COMMA", "EPS"} },
   },
+  .follow = {
+    { "start", {"EOF"} },
+    { "s", {"EOF", "COMMA", "RPAREN"} },
+    { "l", {"RPAREN"} },
+    { "l_prime", {"RPAREN"} },
+  },
 };
 
 // problem-04
@@ -324,6 +368,7 @@ constexpr auto SAMPLE7 = R"(
 A    heh
 B    42
 %%
+start: s;
 s: a A a B | b B b A;
 a: EPS;
 b: EPS;
@@ -335,6 +380,7 @@ const TGrammar GRAMMAR7 = {
     { "B", "42" },
   },
   .rules = {
+    { "start", { { "s" }, }, },
     { "s", { {"a", "A", "a", "B"}, {"b", "B", "b", "A"}, }, },
     { "a", { { "EPS" }, }, },
     { "b", { { "EPS" }, }, },
@@ -344,12 +390,19 @@ const TGrammar GRAMMAR7 = {
     { "a", {"EPS"} },
     { "b", {"EPS"} },
   },
+  .follow = {
+    { "start", {"EOF"} },
+    { "s", {"EOF"} },
+    { "a", {"A", "B"} },
+    { "b", {"A", "B"} },
+  },
 };
 
 // problem-06
 constexpr auto SAMPLE8 = R"(
 A    heh
 %%
+start: s;
 s: a c b | c B b | b A;
 a: D A | b c;
 b: G | EPS;
@@ -361,6 +414,7 @@ const TGrammar GRAMMAR8 = {
     { "A", "heh" },
   },
   .rules = {
+    { "start", { { "s" }, }, },
     { "s", { {"a", "c", "b"}, {"c", "B", "b"}, {"b", "A"}, }, },
     { "a", { {"D", "A"}, {"b", "c" }, }, },
     { "b", { { "G" }, { "EPS" }, }, },
@@ -371,6 +425,13 @@ const TGrammar GRAMMAR8 = {
     { "a", {"D", "G", "H", "EPS"} },
     { "b", {"G", "EPS"} },
     { "c", {"H", "EPS"} },
+  },
+  .follow = {
+    { "start", {"EOF"} },
+    { "s", {"EOF"} },
+    { "a", {"H", "G", "EOF"} },
+    { "b", {"A", "H", "G", "EOF"} },
+    { "c", {"G", "B", "H", "EOF"} },
   },
 };
 
@@ -389,6 +450,12 @@ TEST_P(GrammarTest, BasicChecks) {
     got->CalculateFIRST();
     for (const auto& [lhs, lhsFirst] : expectedGrammar.first) {
       EXPECT_EQ(lhsFirst, got->first[lhs]);
+    }
+  }
+  if (!expectedGrammar.follow.empty()) {
+    got->CalculateFOLLOW();
+    for (const auto& [lhs, lhsFollow] : expectedGrammar.follow) {
+      EXPECT_EQ(lhsFollow, got->follow[lhs]);
     }
   }
 }
