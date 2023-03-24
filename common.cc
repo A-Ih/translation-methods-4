@@ -59,6 +59,8 @@ std::shared_ptr<TGrammar> ParseGrammar(const std::string& grammarString) {
             return IS_TOKEN(s) || IS_NTERM(s) || IS_TS(s);
       }), "The right hand side of the production should only contain tokens, nonterminals or translating symbols");
 
+      EXPECT(ranges::none_of(vec, [] (const std::string& s) { return s == "EOF"; }), "Don't use reserved EOF terminal");
+
       ruleGroup.push_back(vec);
     }
   }
@@ -140,12 +142,11 @@ void TGrammar::CalculateFOLLOW() {
     change = false;
     for (auto& [lhs, rhsGroup] : rules) {
       for (auto& rhs : rhsGroup) {
-        // TODO: views::zip(rhs, views::ints(1))
-        for (int i = 0; i < rhs.size(); i++) {
-          if (!IS_NTERM(rhs[i])) {
+        for (const auto& [i, ithTok] : ranges::views::enumerate(rhs)) {
+          if (!IS_NTERM(ithTok)) {
             continue;
           }
-          auto& bFollow = follow[rhs[i]];
+          auto& bFollow = follow[ithTok];
           auto& aFollow = follow[lhs];
           auto oldSz = bFollow.size();
           auto& gammaFirst = CalculateRecurFIRST(*this, rhs | ranges::views::drop(i + 1));
