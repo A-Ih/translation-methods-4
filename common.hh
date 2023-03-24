@@ -16,11 +16,17 @@ struct TGrammar {
   // nonTerm -> set of tokens that can follow it
   std::unordered_map<std::string, std::unordered_set<std::string>> follow;
 
-  // (term | nonTerm) -> set of tokens that the arguments can start with
+  // (term | nonTerm)* -> set of tokens that the arguments can start with
+  // the arguments are joined with ' ' (so their representation remains unique)
   std::unordered_map<std::string, std::unordered_set<std::string>> first;
+  // lhs -> (FIRST1(rhs), rhs)
+  std::unordered_map<std::string, std::pair<std::vector<std::string>, std::unordered_set<std::string>>> first1;
 
-  // We also have FIRST1 which is calculated for each rule do we'll leave it
-  // until generation
+  void CalculateFIRST();
+
+// TODO: CalculateFIRST1, CalculateFOLLOW, устранить бесполезные символы (надо
+// погуглить как  это делается, в конспекте под определением FIRST содержится
+// описание бесполезных символов)
 };
 
 // This is made as macro so the message expression won't be computed when not
