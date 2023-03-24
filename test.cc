@@ -186,13 +186,201 @@ const TGrammar GRAMMAR3{
   },
 };
 
+/*******************************************************************************
+*                          Grammars from gatevidalay                          *
+*******************************************************************************/
+// Taken from here: https://www.gatevidyalay.com/first-and-follow-compiler-design/
+
+// problem-01
+constexpr auto SAMPLE4 = R"(
+A    haha
+
+%%
+
+s: A b d H;
+b: C c;
+c: B c | EPS;
+d: e f;
+e: G | EPS;
+f: F | EPS;
+)";
+
+const TGrammar GRAMMAR4 = {
+  .tokenToRegex = {
+    { "A", "haha" },
+  },
+  .rules = {
+    {
+      "s",
+      {
+        {"A", "b", "d", "H"},
+      },
+    },
+    {
+      "b",
+      {
+        {"C", "c"},
+      },
+    },
+    {
+      "c",
+      {
+        {"B", "c"},
+        {"EPS"},
+      },
+    },
+    {
+      "d",
+      {
+        {"e", "f"},
+      },
+    },
+    {
+      "e",
+      {
+        {"G"},
+        {"EPS"},
+      },
+    },
+    {
+      "f",
+      {
+        {"F"},
+        {"EPS"},
+      },
+    },
+  },
+  .first = {
+    { "s", {"A"} },
+    { "b", {"C"} },
+    { "c", {"B", "EPS"} },
+    { "d", {"G", "F", "EPS"} },
+    { "e", {"G", "EPS"} },
+    { "f", {"F", "EPS"} },
+  },
+};
+
+// problem-02
+constexpr auto SAMPLE5 = R"(
+B    boba
+%%
+s: a;
+a: A b | a D;
+b: B;
+c: G;
+)";
+
+const TGrammar GRAMMAR5 = {
+  .tokenToRegex = {
+    { "B", "boba" },
+  },
+  .rules = {
+    { "s", { {"a"}, }, },
+    { "a", { {"A", "b"}, {"a", "D"}, }, },
+    { "b", { { "B" }, }, },
+    { "c", { { "G" }, }, },
+  },
+  .first = {
+    { "s", {"A"} },
+    { "a", {"A"} },
+    { "b", {"B"} },
+    { "c", {"G"} },
+  },
+};
+
+// problem-03
+constexpr auto SAMPLE6 = R"(
+LPAREN    [(]
+RPAREN    [)]
+COMMA    ,
+A    kek
+%%
+s: LPAREN l RPAREN | A;
+l: s l_prime;
+l_prime: COMMA s l_prime | EPS;
+)";
+
+const TGrammar GRAMMAR6 = {
+  .tokenToRegex = {
+    { "LPAREN", "[(]" },
+    { "RPAREN", "[)]" },
+    { "COMMA", "," },
+    { "A", "kek" },
+  },
+  .rules = {
+    { "s", { {"LPAREN", "l", "RPAREN"}, { "A" }, }, },
+    { "l", { {"s", "l_prime"}, }, },
+    { "l_prime", { { "COMMA", "s", "l_prime" }, { "EPS" }, }, },
+  },
+  .first = {
+    { "s", {"LPAREN", "A"} },
+    { "l", {"LPAREN", "A"} },
+    { "l_prime", {"COMMA", "EPS"} },
+  },
+};
+
+// problem-04
+constexpr auto SAMPLE7 = R"(
+A    heh
+B    42
+%%
+s: a A a B | b B b A;
+a: EPS;
+b: EPS;
+)";
+
+const TGrammar GRAMMAR7 = {
+  .tokenToRegex = {
+    { "A", "heh" },
+    { "B", "42" },
+  },
+  .rules = {
+    { "s", { {"a", "A", "a", "B"}, {"b", "B", "b", "A"}, }, },
+    { "a", { { "EPS" }, }, },
+    { "b", { { "EPS" }, }, },
+  },
+  .first = {
+    { "s", {"A", "B"} },
+    { "a", {"EPS"} },
+    { "b", {"EPS"} },
+  },
+};
+
+// problem-06
+constexpr auto SAMPLE8 = R"(
+A    heh
+%%
+s: a c b | c B b | b A;
+a: D A | b c;
+b: G | EPS;
+c: H | EPS;
+)";
+
+const TGrammar GRAMMAR8 = {
+  .tokenToRegex = {
+    { "A", "heh" },
+  },
+  .rules = {
+    { "s", { {"a", "c", "b"}, {"c", "B", "b"}, {"b", "A"}, }, },
+    { "a", { {"D", "A"}, {"b", "c" }, }, },
+    { "b", { { "G" }, { "EPS" }, }, },
+    { "c", { { "H" }, { "EPS" }, }, },
+  },
+  .first = {
+    { "s", {"D", "G", "H", "EPS", "B", "A"} },
+    { "a", {"D", "G", "H", "EPS"} },
+    { "b", {"G", "EPS"} },
+    { "c", {"H", "EPS"} },
+  },
+};
+
 struct GrammarTest : testing::TestWithParam<std::pair<std::string, TGrammar>> {};
 
 TEST_P(GrammarTest, BasicChecks) {
   const auto& [text, expectedGrammar] = GetParam();
 
   std::shared_ptr<TGrammar> got;
-  EXPECT_NO_THROW(got = ParseGrammar(text));
+  ASSERT_NO_THROW(got = ParseGrammar(text));
 
   EXPECT_EQ(expectedGrammar.tokenToRegex, got->tokenToRegex);
   EXPECT_EQ(expectedGrammar.rules, got->rules);
@@ -208,6 +396,11 @@ TEST_P(GrammarTest, BasicChecks) {
 INSTANTIATE_TEST_SUITE_P(GrammarProcessing, GrammarTest, testing::Values(
       std::pair{SAMPLE1, GRAMMAR1},
       std::pair{SAMPLE2, GRAMMAR2},
-      std::pair{SAMPLE3, GRAMMAR3}
+      std::pair{SAMPLE3, GRAMMAR3},
+      std::pair{SAMPLE4, GRAMMAR4},
+      std::pair{SAMPLE5, GRAMMAR5},
+      std::pair{SAMPLE6, GRAMMAR6},
+      std::pair{SAMPLE7, GRAMMAR7},
+      std::pair{SAMPLE8, GRAMMAR8}
       // TODO: add more examples, I'm too lazy to do it now
 ));
