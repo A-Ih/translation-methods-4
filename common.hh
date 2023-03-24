@@ -8,6 +8,7 @@
 #include <absl/strings/str_split.h>
 #include <absl/strings/str_format.h>
 
+#include "debug.hh"
 
 struct TGrammar {
   std::unordered_map<std::string, std::string> tokenToRegex;
@@ -28,10 +29,6 @@ struct TGrammar {
 // погуглить как  это делается, в конспекте под определением FIRST содержится
 // описание бесполезных символов)
 };
-
-// This is made as macro so the message expression won't be computed when not
-// needed (which should be almost always the case)
-#define EXPECT(cond, message) if (!(cond)) { throw std::runtime_error(absl::StrFormat(__FILE__ ":%d %s", __LINE__, message)); }
 
 template<std::size_t N>
 inline std::array<std::string, N> ConstSplit(std::string_view text, std::string_view sep) {
