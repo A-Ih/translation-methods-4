@@ -30,7 +30,7 @@ std::shared_ptr<TGrammar> ParseGrammar(const std::string& grammarString) {
   }
 
   EXPECT(!utils::OneOf("EPS", grammar.tokenToRegex | ranges::views::keys), "Don't define reserved token EPS");
-  EXPECT(!utils::OneOf("EOF", grammar.tokenToRegex | ranges::views::keys), "Don't define reserved token EOF");
+  EXPECT(!utils::OneOf("MY_EOF", grammar.tokenToRegex | ranges::views::keys), "Don't define reserved token MY_EOF");
 
   for (auto productionGroup : absl::StrSplit(productions, ';', absl::SkipWhitespace())) {
     auto [nonTermId, ps] = ConstSplit<2>(productionGroup, ":");
@@ -50,7 +50,7 @@ std::shared_ptr<TGrammar> ParseGrammar(const std::string& grammarString) {
             return IS_TOKEN(s) || IS_NTERM(s) || IS_TS(s);
       }), "The right hand side of the production should only contain tokens, nonterminals or translating symbols");
 
-      EXPECT(ranges::none_of(vec, [] (const std::string& s) { return s == "EOF"; }), "Don't use reserved EOF terminal");
+      EXPECT(ranges::none_of(vec, [] (const std::string& s) { return s == "MY_EOF"; }), "Don't use reserved MY_EOF terminal");
 
       ruleGroup.push_back(vec);
     }
@@ -126,7 +126,7 @@ void TGrammar::CalculateFOLLOW() {
   EXPECT(!first.empty(), "FIRST set should be calculated before FOLLOW");
   EXPECT(rules.count("start") == 1, "There should be at least one rule for starting nonterminal `start`");
 
-  follow["start"] = { "EOF" };
+  follow["start"] = { "MY_EOF" };
 
   bool change{true};
   while (change) {

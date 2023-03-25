@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 ################################################################################
 
 add_executable(test common.cc test.cc)
-add_executable(generator generator.cc common.cc)
+add_executable(generator generator.cc common.cc static.cc)
 
 ################################################################################
 #                            Common compile options                            #

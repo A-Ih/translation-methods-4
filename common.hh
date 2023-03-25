@@ -6,6 +6,8 @@
 #include <unordered_set>
 #include <regex>
 
+#include <range/v3/view/any_view.hpp>
+
 #include <absl/strings/str_split.h>
 #include <absl/strings/str_format.h>
 
@@ -54,4 +56,5 @@ inline std::array<std::string, N> ConstSplit(std::string_view text, std::string_
   return arr;
 }
 
+std::unordered_set<std::string>& CalculateRecurFIRST(TGrammar& grammar, ranges::any_view<std::string, ranges::category::bidirectional | ranges::category::sized> alpha);
 std::shared_ptr<TGrammar> ParseGrammar(const std::string& grammarString);
