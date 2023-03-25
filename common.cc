@@ -64,6 +64,8 @@ std::unordered_set<std::string>& CalculateRecurFIRST(TGrammar& grammar, ranges::
     return grammar.first["EPS"];  // basically { EPS }
   }
 
+  // NOTE: BE VERY CAUTIOUS!!! r::v::join appends null terminator if the
+  // separator is a c_str!!!!
   std::string realAlpha = alpha | ranges::views::join(' ') | ranges::to<std::string>();
   auto& fst = grammar.first[std::move(realAlpha)];
 

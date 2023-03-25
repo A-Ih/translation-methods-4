@@ -5,6 +5,7 @@ const char* AST_TEMPLATE = R"(
 #include <vector>
 #include <string>
 #include <any>
+#include <iostream>
 
 enum class EToken {
   MY_EOF,
@@ -21,7 +22,7 @@ struct TNode {
   std::string name;
   std::any value;
 
-  virtual ~TNode() = 0;
+  virtual ~TNode() = default;
 };
 
 struct TTree : TNode {
@@ -69,9 +70,33 @@ struct IVisitor {
     }
     return parent->children[i];
   }
-
-  static std::shared_ptr<IVisitor> GetVisitor();  // user should define this, we provide only the declaration
 };
+
+
+std::shared_ptr<IVisitor> GetVisitor();  // user should define this, we provide only the declaration
+
+inline std::size_t TreeToDotHelper(std::ostream& os, const TNode* node,
+                                   std::size_t& id) {
+  std::size_t thisId = ++id;
+  os << "n" << thisId << " [label=\"" << node->name << "\"]\n";
+  const TTree* t = dynamic_cast<const TTree*>(node);
+  if (t == nullptr) {
+    return thisId;
+  }
+  for (auto& child : t->children) {
+    auto childId = TreeToDotHelper(os, child.get(), id);
+    os << "n" << thisId << " -> "
+       << "n" << childId << "\n";
+  }
+  return thisId;
+}
+
+inline void TreeToDot(std::ostream& os, const TNode* node) {
+  os << "strict digraph {\n";
+  std::size_t id = 0;
+  TreeToDotHelper(os, node, id);
+  os << "}\n";
+}
 )";
 
 const char* PARSER_TEMPLATE = R"(
@@ -91,6 +116,7 @@ public:
   TLexer(std::shared_ptr<std::istream> input) : curTokenType{EToken::EPS}, is{input} {
     buf.reserve(CAPACITY);
     FillBuffer();
+    NextToken();
   }
 
   void NextToken() {
@@ -177,7 +203,7 @@ private:
 
 struct TParser {
 
-  TParser(std::shared_ptr<TLexer> l, std::shared_ptr<IVisitor> v = IVisitor::GetVisitor()) : lexer{l}, visitor{v} {}
+  TParser(std::shared_ptr<TLexer> l, std::shared_ptr<IVisitor> v = GetVisitor()) : lexer{l}, visitor{v} {}
 
   // signature: TPtr Parse_<nterm name>(TNode* parent);
   {{parsing_methods}}
@@ -210,3 +236,37 @@ const char* PARSE_METHOD_TEMPLATE = R"(
   }
 )";
 
+const char* MAIN_TEMPLATE = R"(
+#include <fstream>
+
+#include "parser.hh"
+#include "ast.hh"
+
+struct TVisitor : IVisitor {
+  // TODO: write the implementation of visit methods if there are any (they are
+  // all abstract
+  {{visit_overrides}}
+};
+
+std::shared_ptr<IVisitor> GetVisitor() {
+  // TODO: tweak this function to your liking
+  return std::make_shared<TVisitor>();
+}
+
+int main(int argc, char** argv) {
+  std::shared_ptr<std::istream> source;
+  if (argc == 1) {
+    // read from stdin
+    source = std::shared_ptr<std::istream>(&std::cin, [](auto) {});
+    // custom noop deleter for std::cin
+  } else {
+    assert(argc == 2);
+    source = std::make_shared<std::ifstream>(std::string{argv[1]});
+  }
+  auto lexer = std::make_shared<TLexer>(source);
+  auto parser = std::make_shared<TParser>(lexer);
+
+  auto result = parser->Parse();
+  TreeToDot(std::cout, result.get());
+}
+)";

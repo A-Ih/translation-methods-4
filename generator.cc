@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream>
+#include <filesystem>
 
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/map.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/range/conversion.hpp>
+#include <range/v3/algorithm/equal.hpp>
 
 #include <absl/strings/str_split.h>
 #include <absl/strings/str_format.h>
@@ -25,6 +27,7 @@ ABSL_FLAG(std::string, grammar_file, "", "file containing the grammar descriptio
 extern const char* AST_TEMPLATE;
 extern const char* PARSER_TEMPLATE;
 extern const char* PARSE_METHOD_TEMPLATE;
+extern const char* MAIN_TEMPLATE;
 
 std::string ReadFile(std::istream& in) {
   char buf[1024];
@@ -59,15 +62,18 @@ int main(int argc, char** argv) {
 
   auto outDir = absl::GetFlag(FLAGS_out_dir);
 
-  /****************
-  *  AST header  *
-  ****************/
-  auto visitorMethods = grammar->rules
+  /****************************************************************************
+  *                                AST header                                *
+  ****************************************************************************/
+
+  auto transSymbols = grammar->rules
     | ranges::views::values
     | ranges::views::join
     | ranges::views::join
     | ranges::views::filter(IS_TS)
-    | ranges::views::transform([] (std::string_view str) -> std::string_view { return str.substr(1); })  // remove $
+    | ranges::views::transform([] (std::string_view str) -> std::string_view { return str.substr(1); });  // remove $
+
+  auto visitorMethods = transSymbols
     | ranges::views::transform([] (std::string_view str) { return absl::StrFormat("virtual void visit_%s(TNode* ctx) = 0;", str); })
     | ranges::views::join(std::string{"\n  "})  // otherwise null-terminator gets added to output
     | ranges::to<std::string>();
@@ -85,9 +91,10 @@ int main(int argc, char** argv) {
     out << astHeader;
   }
 
-  /***************************
-  *  Parser & lexer header  *
-  ***************************/
+  /****************************************************************************
+  *                          Parser & lexer header                           *
+  ****************************************************************************/
+
   auto tokenToRegex = grammar->tokenToRegex
     | ranges::views::transform([](const auto& kv) { const auto& [k, v] = kv; return absl::StrFormat(R"({EToken::%s, std::regex{"%s"}})", k, v); })
     | ranges::views::join(std::string{",\n    "})
@@ -112,16 +119,18 @@ int main(int argc, char** argv) {
         | ranges::views::join(std::string{"\n"})
         | ranges::to<std::string>();
 
-      auto caseBody = rhs
-        | ranges::views::transform([] (std::string_view rhsItem) {
-            if (IS_TS(rhsItem)) {
-              std::string_view withoutDollar = rhsItem.substr(1);
-              return absl::StrFormat("        visitor->visit_%s(r.get());", withoutDollar);
-            } else if (IS_NTERM(rhsItem)) {
-              return absl::StrFormat("        r->AddChild(Parse_%s(r.get()));", rhsItem);
-            } else {
-              EXPECT(IS_TOKEN(rhsItem), absl::StrFormat("Can only be token but got %s", rhsItem));
-              return absl::StrFormat(
+      std::string caseBody;
+      if (!ranges::equal(rhs, ranges::views::single("EPS"))) {
+        caseBody = rhs
+          | ranges::views::transform([] (std::string_view rhsItem) {
+              if (IS_TS(rhsItem)) {
+                std::string_view withoutDollar = rhsItem.substr(1);
+                return absl::StrFormat("        visitor->visit_%s(r.get());", withoutDollar);
+              } else if (IS_NTERM(rhsItem)) {
+                return absl::StrFormat("        r->AddChild(Parse_%s(r.get()));", rhsItem);
+              } else {
+                EXPECT(IS_TOKEN(rhsItem), absl::StrFormat("Can only be token but got %s", rhsItem));
+                return absl::StrFormat(
         R"(
         {
           auto [type, localTok] = lexer->Peek();
@@ -131,11 +140,12 @@ int main(int argc, char** argv) {
           child->name = localTok;
           r->AddChild(child);
         })",
-                  rhsItem);
-            }
-        })
-        | ranges::views::join(std::string{"\n"})
-        | ranges::to<std::string>();
+                    rhsItem);
+              }
+          })
+          | ranges::views::join(std::string{"\n"})
+          | ranges::to<std::string>();
+      }
       ruleCases.append(absl::StrFormat("%s {\n%s\n        break;\n      }\n", cases, caseBody));
     }
     ruleCases.append(
@@ -161,5 +171,16 @@ int main(int argc, char** argv) {
     out << parserHeader;
   }
 
+  if (auto outMain = absl::StrCat(outDir, "/main.cc"); !std::filesystem::exists(outMain)) {
+    std::ofstream out{outMain};
+    auto visitOverrides = transSymbols
+      | ranges::views::transform([] (std::string_view str) { return absl::StrFormat("void visit_%s(TNode* ctx) override {}", str); })
+      | ranges::views::join(std::string{"\n  "})
+      | ranges::to<std::string>();
+    out << utils::Replace(MAIN_TEMPLATE, {
+        {"{{visit_overrides}}", visitOverrides},
+    });
+    LOG(INFO) << "No main fail; generated " << outMain;
+  }
 }
 
