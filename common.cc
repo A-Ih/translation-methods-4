@@ -17,15 +17,6 @@
 
 #include "common.hh"
 
-static const std::regex TOKEN_REGEX{"[A-Z][A-Z0-9_]*"};
-static const std::regex NONTERMINAL_REGEX{"[a-z][a-z0-9_]*"};
-static const std::regex TS_REGEX{"\\$[a-z][a-z0-9_]*"};  // TODO: check if the
-                                                         // escaping stuff is
-                                                         // valid
-constexpr auto IS_TOKEN = [] (std::string_view s) { return std::regex_match(s.begin(), s.end(), TOKEN_REGEX); };
-constexpr auto IS_NTERM = [] (std::string_view s) { return std::regex_match(s.begin(), s.end(), NONTERMINAL_REGEX); };
-constexpr auto IS_TS = [] (std::string_view s) { return std::regex_match(s.begin(), s.end(), TS_REGEX); };
-
 std::shared_ptr<TGrammar> ParseGrammar(const std::string& grammarString) {
 
   TGrammar grammar;
