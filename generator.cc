@@ -60,6 +60,11 @@ int main(int argc, char** argv) {
   grammar->CalculateFOLLOW();
   LOG(INFO) << "FOLLOW succsessfully calculated";
 
+  if (!grammar->IsLL1()) {
+    LOG(ERROR) << "The grammar is not LL1! Aborting";
+    std::exit(1);
+  }
+
   auto outDir = absl::GetFlag(FLAGS_out_dir);
 
   /****************************************************************************
@@ -74,7 +79,7 @@ int main(int argc, char** argv) {
     | ranges::views::transform([] (std::string_view str) -> std::string_view { return str.substr(1); });  // remove $
 
   auto visitorMethods = transSymbols
-    | ranges::views::transform([] (std::string_view str) { return absl::StrFormat("virtual void visit_%s(TNode* ctx) = 0;", str); })
+    | ranges::views::transform([] (std::string_view str) { return absl::StrFormat("virtual void visit_%s(TTree* ctx) = 0;", str); })
     | ranges::views::join(std::string{"\n  "})  // otherwise null-terminator gets added to output
     | ranges::to<std::string>();
   auto tokens = grammar->tokenToRegex
@@ -174,13 +179,13 @@ int main(int argc, char** argv) {
   if (auto outMain = absl::StrCat(outDir, "/main.cc"); !std::filesystem::exists(outMain)) {
     std::ofstream out{outMain};
     auto visitOverrides = transSymbols
-      | ranges::views::transform([] (std::string_view str) { return absl::StrFormat("void visit_%s(TNode* ctx) override {}", str); })
+      | ranges::views::transform([] (std::string_view str) { return absl::StrFormat("void visit_%s(TTree* ctx) override {}", str); })
       | ranges::views::join(std::string{"\n  "})
       | ranges::to<std::string>();
     out << utils::Replace(MAIN_TEMPLATE, {
         {"{{visit_overrides}}", visitOverrides},
     });
-    LOG(INFO) << "No main fail; generated " << outMain;
+    LOG(INFO) << "No main in out_dir; generated " << outMain;
   }
 }
 

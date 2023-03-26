@@ -245,6 +245,29 @@ const char* MAIN_TEMPLATE = R"(
 struct TVisitor : IVisitor {
   // TODO: write the implementation of visit methods if there are any (they are
   // all abstract
+  using T = int;
+
+  T GetT(const TNode* n) {
+    try {
+      return std::any_cast<T>(n->value);
+    } catch (...) {
+      std::cerr << "Caught in TNode* with name " << n->name << std::endl;
+      throw;
+    }
+  }
+
+  T GetT(const std::shared_ptr<TNode>& n) {
+    return GetT(n.get());
+  }
+
+  bool IsEps(const TNode* n) {
+    auto t = dynamic_cast<const TTree*>(n);
+    if (t == nullptr) {
+      return false;
+    }
+    return t->children.empty();
+  }
+
   {{visit_overrides}}
 };
 

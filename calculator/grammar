@@ -2,14 +2,20 @@ NUM    [0-9]+
 LPAREN    [(]
 RPAREN    [)]
 PLUS    [+]
+MINUS    [-]
 ASTERISK    [*]
 
 %%
 
-start: e;
-e: t e_prime $e;
-e_prime: PLUS t e_prime $e_prime | EPS;
-t: f t_prime $t;
-t_prime: ASTERISK f t_prime $t_prime| EPS;
-f: LPAREN e RPAREN $f| NUM;
+start: e $start;
+e: t $e_before e_prime $e_after;
+e_prime:
+    PLUS t $e_prime_plus_before e_prime $e_prime_plus_after
+    | MINUS t $e_prime_minus_before e_prime $e_prime_minus_after
+    | EPS;
+t: f $t_before t_prime $t_after;
+t_prime:
+    ASTERISK f $t_prime_before t_prime $t_prime_after
+    | EPS;
+f: LPAREN e RPAREN $f_paren | NUM $f_num;
 
