@@ -40,11 +40,21 @@ struct TVisitor : IVisitor {
     ctx->value = GetT(ctx->children[0]);
   }
 
-  void visit_t_prime_before(TTree* ctx) override {
+  void visit_t_prime_mul_before(TTree* ctx) override {
     ctx->value = GetT(ctx->parent) * GetT(ctx->children[1]);
   }
 
-  void visit_t_prime_after(TTree* ctx) override {
+  void visit_t_prime_mul_after(TTree* ctx) override {
+    if (!IsEps(ctx->children[2].get())) {
+      ctx->value = GetT(ctx->children[2]);
+    }
+  }
+
+  void visit_t_prime_div_before(TTree* ctx) override {
+    ctx->value = GetT(ctx->parent) / GetT(ctx->children[1]);
+  }
+
+  void visit_t_prime_div_after(TTree* ctx) override {
     if (!IsEps(ctx->children[2].get())) {
       ctx->value = GetT(ctx->children[2]);
     }

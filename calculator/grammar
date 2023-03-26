@@ -4,6 +4,7 @@ RPAREN    [)]
 PLUS    [+]
 MINUS    [-]
 ASTERISK    [*]
+SLASH    [/]
 
 %%
 
@@ -15,7 +16,8 @@ e_prime:
     | EPS;
 t: f $t_before t_prime $t_after;
 t_prime:
-    ASTERISK f $t_prime_before t_prime $t_prime_after
+    ASTERISK f $t_prime_mul_before t_prime $t_prime_mul_after
+    | SLASH f $t_prime_div_before t_prime $t_prime_div_after
     | EPS;
 f: LPAREN e RPAREN $f_paren | NUM $f_num;
 
