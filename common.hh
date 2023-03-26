@@ -22,6 +22,7 @@ constexpr auto IS_NTERM = [] (std::string_view s) { return std::regex_match(s.be
 constexpr auto IS_TS = [] (std::string_view s) { return std::regex_match(s.begin(), s.end(), TS_REGEX); };
 
 struct TGrammar {
+  std::vector<std::string> tokenPrecedence;
   std::unordered_map<std::string, std::string> tokenToRegex;
   std::unordered_map<std::string, std::vector<std::vector<std::string>>> rules;
 

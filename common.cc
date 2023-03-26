@@ -26,6 +26,7 @@ std::shared_ptr<TGrammar> ParseGrammar(const std::string& grammarString) {
     assert(!line.empty());
     auto [tokId, regex] = ConstSplit<2>(line, "    ");
     EXPECT(IS_TOKEN(tokId), absl::StrFormat("Token doesn't match the format: `%s`", tokId));
+    grammar.tokenPrecedence.push_back(tokId);
     grammar.tokenToRegex[tokId] = regex;
   }
 

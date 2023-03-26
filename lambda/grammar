@@ -1,0 +1,67 @@
+LPAREN    [(]
+RPAREN    [)]
+VBAR    [|]
+AMPERSAND    [&]
+TILDE    [~]
+PLUS    [+]
+ASTERISK    [*]
+LAMBDA_KW    lambda
+VARIABLE    [a-z]+
+CONSTANT    [0-9]+
+COLON    [:]
+COMMA    [,]
+
+%%
+
+start: declaration;
+
+declaration:
+    LAMBDA_KW arglist COLON el;
+
+arglist:
+    varlist
+    | EPS;
+
+varlist:
+    VARIABLE varlist_prime;
+
+varlist_prime:
+    COMMA VARIABLE varlist_prime
+    | EPS;
+
+el:
+    tl el_prime;
+
+el_prime:
+    VBAR tl el_prime
+    | EPS;
+
+tl:
+    fl tl_prime;
+
+tl_prime:
+    AMPERSAND fl tl_prime
+    | EPS;
+
+fl:
+    TILDE fl
+    | expression;
+
+expression:
+    term expression_prime;
+
+expression_prime:
+    PLUS term expression_prime
+    | EPS;
+
+term:
+    factor term_prime;
+
+term_prime:
+    ASTERISK factor term_prime
+    | EPS;
+
+factor:
+    LPAREN el RPAREN
+    | VARIABLE
+    | CONSTANT;

@@ -1,0 +1,42 @@
+lambda
+lambda:
+lambda n : :
+: n
+;;; invalid token chars
+a bunch of tokens
+lambda varlist without commas: x
+lambbda n : x*y
+lambda n:
+
+n : n + n
+a,b,c
+lambda a,b,c: a*(b*((((c)))
+lambda a,b,c: BIG_VARIABLES IN THE EXPRESSION
+lambda BIG_VAR_IN_VARLIST: x * x
+lambda bad,paren,sequence: a*(b+c*(d)+g*(k
+lambda ommitted,multiplication: a(b+c)+c(a+b)+b(a+c)
+lambda with, unparsable, tokens: 0xAB0BA + 0.1337
+lambda with no: commas + (in + (arglist))
+lambda with, ,too, much: commas + in + arglist
+lambda that,looks,normal: but + has * a, comma * in *expression
+lambda that shows: how much ideas I have left
+lambda with `: `alien & characters
+lambda with,variable,named,lambda: is + prohibited + since + lambda + is + a +
+keyword
+lambda with,snEAKY: big + letters +inside + variable + name
+lambda x, y: (x & 102&) | (y & 1024)
+lambda x, y: (x & 102&) | y & 1024)
+hello
+228
+lambda 42: 42
+lambda x, 42: x + 42
+lambda x, 42: x | y | 42 + 228 * 1337 & 1024
+lambda x: ~+42 & ~x | 24
+lambda x: ~x~
+lambda x: x~
+lambda x, y: (~x & 42 ~ y)
+lambda: ~42+~5
+lambda x: ~42 & ~x | 24~
+lambda x: ~
+lambda: 42~+5
+lambda: ~~~~42+~~~x

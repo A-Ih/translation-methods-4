@@ -100,8 +100,8 @@ int main(int argc, char** argv) {
   *                          Parser & lexer header                           *
   ****************************************************************************/
 
-  auto tokenToRegex = grammar->tokenToRegex
-    | ranges::views::transform([](const auto& kv) { const auto& [k, v] = kv; return absl::StrFormat(R"({EToken::%s, std::regex{"%s"}})", k, v); })
+  auto tokenToRegex = grammar->tokenPrecedence
+    | ranges::views::transform([&tokenToRegex=grammar->tokenToRegex](const auto& tokId) { return absl::StrFormat(R"({EToken::%s, std::regex{"%s"}})", tokId, tokenToRegex[tokId]); })
     | ranges::views::join(std::string{",\n    "})
     | ranges::to<std::string>();
 

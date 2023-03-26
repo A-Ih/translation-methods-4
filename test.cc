@@ -59,8 +59,8 @@ const TGrammar GRAMMAR1{
     { "EPS", {"EPS"} },
   },
   .follow = {
-    { "start", { "EOF" } },
-    { "file", { "EOF" } },
+    { "start", { "MY_EOF" } },
+    { "file", { "MY_EOF" } },
     { "statements", { "TOK1" } },
   },
 };
@@ -121,10 +121,10 @@ const TGrammar GRAMMAR2{
     { "EPS", {"EPS"} },
   },
   .follow = {
-    { "start", { "EOF" } },
-    { "e", { "EOF", "PLUS", "RPAREN" } },
-    { "t", { "EOF", "PLUS", "ASTERISK", "RPAREN" } },
-    { "f", { "EOF", "PLUS", "ASTERISK", "RPAREN" } },
+    { "start", { "MY_EOF" } },
+    { "e", { "MY_EOF", "PLUS", "RPAREN" } },
+    { "t", { "MY_EOF", "PLUS", "ASTERISK", "RPAREN" } },
+    { "f", { "MY_EOF", "PLUS", "ASTERISK", "RPAREN" } },
   },
 };
 
@@ -199,12 +199,12 @@ const TGrammar GRAMMAR3{
     { "EPS", {"EPS"} },
   },
   .follow = {
-    { "start", { "EOF" } },
-    { "e", { "EOF", "RPAREN", } },
-    { "e_prime", { "EOF", "RPAREN", } },
-    { "t", { "EOF", "PLUS", "RPAREN" } },
-    { "t_prime", { "EOF", "PLUS", "RPAREN" } },
-    { "f", { "EOF", "PLUS", "ASTERISK", "RPAREN" } },
+    { "start", { "MY_EOF" } },
+    { "e", { "MY_EOF", "RPAREN", } },
+    { "e_prime", { "MY_EOF", "RPAREN", } },
+    { "t", { "MY_EOF", "PLUS", "RPAREN" } },
+    { "t_prime", { "MY_EOF", "PLUS", "RPAREN" } },
+    { "f", { "MY_EOF", "PLUS", "ASTERISK", "RPAREN" } },
   },
 };
 
@@ -277,8 +277,8 @@ const TGrammar GRAMMAR4 = {
     { "f", {"F", "EPS"} },
   },
   .follow = {
-    { "start", {"EOF"} },
-    { "s", {"EOF"} },
+    { "start", {"MY_EOF"} },
+    { "s", {"MY_EOF"} },
     { "b", {"G", "F", "H"} },
     { "c", {"G", "F", "H"} },
     { "d", { "H" } },
@@ -316,10 +316,10 @@ const TGrammar GRAMMAR5 = {
     { "c", {"G"} },
   },
   .follow = {
-    { "start", {"EOF"} },
-    { "s", {"EOF"} },
-    { "a", {"D", "EOF"} },
-    { "b", {"EOF", "D"} },
+    { "start", {"MY_EOF"} },
+    { "s", {"MY_EOF"} },
+    { "a", {"D", "MY_EOF"} },
+    { "b", {"MY_EOF", "D"} },
     { "c", {} },
   },
 };
@@ -356,8 +356,8 @@ const TGrammar GRAMMAR6 = {
     { "l_prime", {"COMMA", "EPS"} },
   },
   .follow = {
-    { "start", {"EOF"} },
-    { "s", {"EOF", "COMMA", "RPAREN"} },
+    { "start", {"MY_EOF"} },
+    { "s", {"MY_EOF", "COMMA", "RPAREN"} },
     { "l", {"RPAREN"} },
     { "l_prime", {"RPAREN"} },
   },
@@ -391,8 +391,8 @@ const TGrammar GRAMMAR7 = {
     { "b", {"EPS"} },
   },
   .follow = {
-    { "start", {"EOF"} },
-    { "s", {"EOF"} },
+    { "start", {"MY_EOF"} },
+    { "s", {"MY_EOF"} },
     { "a", {"A", "B"} },
     { "b", {"A", "B"} },
   },
@@ -427,11 +427,11 @@ const TGrammar GRAMMAR8 = {
     { "c", {"H", "EPS"} },
   },
   .follow = {
-    { "start", {"EOF"} },
-    { "s", {"EOF"} },
-    { "a", {"H", "G", "EOF"} },
-    { "b", {"A", "H", "G", "EOF"} },
-    { "c", {"G", "B", "H", "EOF"} },
+    { "start", {"MY_EOF"} },
+    { "s", {"MY_EOF"} },
+    { "a", {"H", "G", "MY_EOF"} },
+    { "b", {"A", "H", "G", "MY_EOF"} },
+    { "c", {"G", "B", "H", "MY_EOF"} },
   },
 };
 

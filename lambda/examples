@@ -1,0 +1,32 @@
+lambda: n
+lambda  :    n
+lambda x: x*x
+lambda x   : x  *x
+lambda a, b:   a + b * (c)
+lambda x,y,z: (((x*x + y*y + z*z)))
+lambda x,lambdaa: x + lambdaa
+lambda    with      , a , lot      ,      of     ,   whitespaces : hello
+lambda long,variable,names: dont + actually * matter
+        lambda with,leading,spaces: is + also +(okay)
+lambda with: a * (lot + ((of *((parens)) + and * (some)) + more))
+lambda with: a*chain*of  *multiplications*  and*an + addition
+lambda with: a + chain*of  + alternating*additions + and*multiplications
+lambda that,wont: (break+my )+cool*( parser+regardless  ) +(  of+its  )+ complexity
+lambda x, y: (x & 1024) | (y & 1024)
+lambda x, y: (x & 102 & y & 1024)
+lambda: 1|2|3|4|5
+lambda: 1&2&3&4&5
+lambda: 1|2&3|4
+lambda a, b, c, d: a|b&c|d
+lambda: 42
+lambda x: x + 42
+lambda x: x | y | 42 + 228 * 1337 & 1024
+lambda x, y: (x | y)
+lambda x, y: (x & y)
+lambda x: ~x
+lambda x, y: (~x & y)
+lambda: ~ 42+5
+lambda x: ~42 & ~x | 24
+lambda x: ~~x
+lambda: ~~42+5
+lambda: ~~~~42|~~~x
