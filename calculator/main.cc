@@ -12,6 +12,16 @@ struct TVisitor : IVisitor {
   // all abstract
   using T = int;
 
+  T dfact(T n) {
+    if (n <= 1) return 1;
+    return n * dfact(n - 2);
+  }
+
+  T fact(T n) {
+    if (n <= 1) return 1;
+    return n * fact(n - 1);
+  }
+
   T GetT(const TNode* n) {
     try {
       return std::any_cast<T>(n->value);
@@ -94,8 +104,40 @@ struct TVisitor : IVisitor {
     ctx->value = ctx->children[1]->value;
   }
 
+  void visit_f_paren_after(TTree* ctx) override {
+    if (!IsEps(ctx->children[3].get())) {
+      ctx->value = ctx->children[3]->value;
+    }
+  }
+
   void visit_f_num(TTree* ctx) override {
     ctx->value = std::stoi(ctx->children[0]->name);
+  }
+
+  void visit_f_num_after(TTree* ctx) override {
+    if (!IsEps(ctx->children[1].get())) {
+      ctx->value = ctx->children[1]->value;
+    }
+  }
+
+  void visit_f_prime_dfact_before(TTree* ctx) override {
+    ctx->value = dfact(GetT(ctx->parent));
+  }
+
+  void visit_f_prime_dfact_after(TTree* ctx) override {
+    if (!IsEps(ctx->children[1].get())) {
+      ctx->value = GetT(ctx->children[1]);
+    }
+  }
+
+  void visit_f_prime_fact_before(TTree* ctx) override {
+    ctx->value = fact(GetT(ctx->parent));
+  }
+
+  void visit_f_prime_fact_after(TTree* ctx) override {
+    if (!IsEps(ctx->children[1].get())) {
+      ctx->value = GetT(ctx->children[1]);
+    }
   }
 
   void visit_e_before(TTree* ctx) override {

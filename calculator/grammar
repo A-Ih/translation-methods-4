@@ -5,6 +5,8 @@ PLUS    [+]
 MINUS    [-]
 ASTERISK    [*]
 SLASH    [/]
+DFACT    !!
+FACT    !
 
 %%
 
@@ -19,5 +21,12 @@ t_prime:
     ASTERISK f $t_prime_mul_before t_prime $t_prime_mul_after
     | SLASH f $t_prime_div_before t_prime $t_prime_div_after
     | EPS;
-f: LPAREN e RPAREN $f_paren | NUM $f_num;
 
+f:
+    LPAREN e RPAREN $f_paren f_prime $f_paren_after
+    | NUM $f_num f_prime $f_num_after;
+
+f_prime:
+    DFACT $f_prime_dfact_before f_prime $f_prime_dfact_after
+    | FACT $f_prime_fact_before f_prime $f_prime_fact_after
+    | EPS;
